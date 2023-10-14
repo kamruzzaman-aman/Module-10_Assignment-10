@@ -1,3 +1,5 @@
+import 'package:assignment_10/add_todo.dart';
+import 'package:assignment_10/todo_model.dart';
 import 'package:assignment_10/update_todo_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 
@@ -9,6 +11,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  List<TodoModel> todoList = [];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,34 +23,18 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            TextFormField(
-              decoration: InputDecoration(
-                  hintText: 'Add Title', border: OutlineInputBorder()),
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            TextFormField(
-              decoration: InputDecoration(
-                  hintText: 'Add description', border: OutlineInputBorder()),
-            ),
-            SizedBox(
-              height: 5,
-            ),
-            ElevatedButton(
-                style:
-                    ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-                onPressed: () {},
-                child: Text('Add')),
-            SizedBox(
-              height: 10,
+            AddTodo(
+              onAddTap: (TodoModel) {
+                addToDo(todoModel: TodoModel);
+              },
             ),
             Expanded(
                 flex: 80,
                 child: Card(
                   child: ListView.builder(
-                    itemCount: 15,
+                    itemCount: todoList.length,
                     itemBuilder: (BuildContext context, int index) {
+                      final todo = todoList[index];
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8.0),
                         child: ListTile(
@@ -61,17 +49,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                     actions: [
                                       TextButton(
                                           onPressed: () {
-                                          Navigator.pop(context);
+                                            Navigator.pop(context);
                                             showModalBottomSheet(
-                                              isScrollControlled: true,
+                                                isScrollControlled: true,
                                                 context: context,
                                                 builder: (_) {
-                                                  return UpdateTodoBottomSheet();
+                                                  return UpdateTodoBottomSheet(
+                                                    getForTitleDescription:
+                                                        todo,
+                                                    onUpdateTap: (TodoModel) {
+                                                      updateToDo(
+                                                          index: index,
+                                                          updateToDoModel:
+                                                              TodoModel);
+                                                    },
+                                                  );
                                                 });
                                           },
                                           child: Text('Edit')),
                                       TextButton(
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            onDelete(index);
+                                          },
                                           child: Text('Delete'))
                                     ],
                                   );
@@ -82,10 +81,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             backgroundColor: Colors.red,
                           ),
                           title: Text(
-                            'title 1',
+                            todo.title,
                             style: ThemeData().textTheme.titleMedium,
                           ),
-                          subtitle: Text('this is a subtitle'),
+                          subtitle: Text(todo.description),
                           trailing: Icon(Icons.arrow_forward),
                         ),
                       );
@@ -96,5 +95,22 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  ///Controller Part Start=======================
+  void addToDo({required TodoModel todoModel}) {
+    todoList.add(todoModel);
+    setState(() {});
+  }
+
+  void updateToDo({required index, required TodoModel updateToDoModel}) {
+    todoList[index] = updateToDoModel;
+    setState(() {});
+  }
+
+  void onDelete(int index) {
+    todoList.removeAt(index);
+    Navigator.pop(context);
+    setState(() {});
   }
 }
